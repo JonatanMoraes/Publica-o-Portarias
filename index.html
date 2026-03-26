@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portarias — CFH/UFSC</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --azul:     #1a3a5c;
+    --azul-mid: #2a5a8c;
+    --azul-lt:  #e8f0f8;
+    --acento:   #c8a84b;
+    --texto:    #1a1a2e;
+    --muted:    #6b7280;
+    --borda:    #d1dce8;
+    --bg:       #f5f7fa;
+    --branco:   #ffffff;
+    --radius:   10px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--azul);
+    color: white;
+    padding: 36px 40px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    background: rgba(200,168,75,0.12);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
+  .header-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--acento);
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  header p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+  }
+  #contador-header {
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+  }
+  #contador-header span { color: var(--acento); font-weight: 500; }
+
+  /* CONTROLES */
+  .controles-wrap {
+    background: var(--branco);
+    border-bottom: 1px solid var(--borda);
+    padding: 20px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .controles { max-width: 1100px; margin: 0 auto; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  .campo-busca {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+  .campo-busca input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 1.5px solid var(--borda);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--texto);
+    background: var(--bg);
+    transition: border-color .2s;
+    outline: none;
+  }
+  .campo-busca input:focus { border-color: var(--azul-mid); background: white; }
+  .campo-busca::before {
+    content: '⌕';
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  select {
+    padding: 10px 14px;
+    border: 1.5px solid var(--borda);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--texto);
+    background: var(--bg);
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+    min-width: 140px;
+  }
+  select:focus { border-color: var(--azul-mid); }
+
+  .btn-limpar {
+    padding: 10px 16px;
+    border: 1.5px solid var(--borda);
+    border-radius: var(--radius);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-limpar:hover { border-color: var(--azul-mid); color: var(--azul); }
+
+  /* CONTEÚDO */
+  .conteudo { max-width: 1100px; margin: 0 auto; padding: 28px 40px 60px; }
+
+  /* ESTADO DE LOADING */
+  #loading {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--borda);
+    border-top-color: var(--azul-mid);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TABELA */
+  .tabela-wrap {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--borda);
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  thead {
+    background: var(--azul);
+    color: white;
+  }
+  thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--borda);
+    transition: background .15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--azul-lt); }
+  tbody td {
+    padding: 13px 16px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .col-numero {
+    font-family: 'DM Serif Display', serif;
+    font-size: 13px;
+    color: var(--azul-mid);
+    white-space: nowrap;
+    min-width: 160px;
+  }
+  .col-nomes { min-width: 180px; }
+  .col-tema { color: var(--muted); font-size: 13px; min-width: 180px; }
+  .col-depto {
+    font-size: 12px;
+    color: var(--azul);
+    background: var(--azul-lt);
+    border-radius: 20px;
+    padding: 3px 10px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .col-data { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .col-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--azul-mid);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border: 1px solid var(--borda);
+    border-radius: 6px;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .col-link a:hover {
+    background: var(--azul);
+    color: white;
+    border-color: var(--azul);
+  }
+
+  .tag-ano {
+    display: inline-block;
+    background: var(--acento);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* SEM RESULTADOS */
+  #sem-resultados {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  #sem-resultados p { font-size: 15px; margin-top: 8px; }
+
+  /* RODAPÉ */
+  .rodape {
+    text-align: center;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--borda);
+    margin-top: 8px;
+  }
+
+  @media (max-width: 700px) {
+    header { padding: 24px 20px; }
+    .controles-wrap { padding: 14px 20px; }
+    .conteudo { padding: 16px 20px 40px; }
+    thead th:nth-child(3), tbody td:nth-child(3),
+    thead th:nth-child(4), tbody td:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-tag">Centro de Filosofia e Ciências Humanas · UFSC</div>
+    <h1>Portarias Administrativas</h1>
+    <p>Consulta pública de portarias emitidas pelo CFH</p>
+    <div id="contador-header">
+      <span id="total-registros">—</span> portarias cadastradas · atualizado automaticamente
+    </div>
+  </div>
+</header>
+
+<div class="controles-wrap">
+  <div class="controles">
+    <div class="campo-busca">
+      <input type="text" id="busca" placeholder="Buscar por nome, número, tema..." oninput="filtrar()">
+    </div>
+    <select id="filtro-ano" onchange="filtrar()">
+      <option value="">Todos os anos</option>
+    </select>
+    <select id="filtro-depto" onchange="filtrar()">
+      <option value="">Todos os departamentos</option>
+    </select>
+    <button class="btn-limpar" onclick="limparFiltros()">✕ Limpar filtros</button>
+  </div>
+</div>
+
+<div class="conteudo">
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Carregando portarias...</p>
+  </div>
+
+  <div class="tabela-wrap" id="tabela-wrap" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Servidor(es)</th>
+          <th>Tema</th>
+          <th>Departamento</th>
+          <th>Data</th>
+          <th>Documento</th>
+        </tr>
+      </thead>
+      <tbody id="corpo-tabela"></tbody>
+    </table>
+    <div id="sem-resultados">
+      <p>Nenhuma portaria encontrada para os filtros selecionados.</p>
+    </div>
+    <div class="rodape" id="rodape-contagem"></div>
+  </div>
+</div>
+
+<script>
+  const PLANILHA_ID = '13kTdHoZzzQBS5soMiTMOBlIS_r2Ri_FC2bjNP2mp7II';
+const ANOS = ['2022', '2023', '2024', '2025', '2026'];
+
+let todasPortarias = [];
+
+async function carregarDados() {
+  const promises = ANOS.map(ano => carregarAba(ano));
+  const resultados = await Promise.all(promises);
+
+  todasPortarias = [];
+  resultados.forEach((linhas, i) => {
+    linhas.forEach(linha => {
+      todasPortarias.push({ ...linha, ano: ANOS[i] });
+    });
+  });
+
+  todasPortarias.sort((a, b) => {
+    if (b.ano !== a.ano) return b.ano.localeCompare(a.ano);
+    return 0;
+  });
+
+  document.getElementById('total-registros').textContent = todasPortarias.length;
+  preencherFiltros();
+  renderizar(todasPortarias);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('tabela-wrap').style.display = 'block';
+}
+
+async function carregarAba(ano) {
+  const url = `https://docs.google.com/spreadsheets/d/${PLANILHA_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(ano)}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    // Remove o wrapper google.visualization.Query.setResponse(...) ou /*O_o*/google.visualization...
+    const jsonStr = text.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, '');
+    const json = JSON.parse(jsonStr);
+    const rows = (json.table && json.table.rows) || [];
+
+    return rows.slice(1).map(row => {
+      const c = row.c || [];
+      const val = (i) => {
+        if (!c[i] || c[i].v === null || c[i].v === undefined) return '';
+        const v = c[i].v;
+        if (typeof v === 'string' && v.startsWith('Date(')) {
+          const p = v.replace('Date(','').replace(')','').split(',');
+          return String(p[2]).padStart(2,'0') + '/' +
+                 String(parseInt(p[1])+1).padStart(2,'0') + '/' + p[0];
+        }
+        return String(v).trim();
+      };
+      return {
+        numero: val(0), nomes: val(1), tema: val(2),
+        departamento: val(3), data: val(4), arquivo: val(5), link: val(6)
+      };
+    }).filter(r => r.numero || r.nomes);
+
+  } catch(e) {
+    console.warn('Erro ao carregar aba ' + ano, e);
+    return [];
+  }
+}
+
+function preencherFiltros() {
+  const selectAno = document.getElementById('filtro-ano');
+  ANOS.slice().reverse().forEach(ano => {
+    const opt = document.createElement('option');
+    opt.value = ano; opt.textContent = ano;
+    selectAno.appendChild(opt);
+  });
+
+  const deptos = [...new Set(
+    todasPortarias.map(p => p.departamento).filter(Boolean)
+  )].sort();
+  const selectDepto = document.getElementById('filtro-depto');
+  deptos.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    selectDepto.appendChild(opt);
+  });
+}
+
+function filtrar() {
+  const busca = document.getElementById('busca').value.toLowerCase();
+  const ano   = document.getElementById('filtro-ano').value;
+  const depto = document.getElementById('filtro-depto').value;
+
+  const resultado = todasPortarias.filter(p => {
+    const textoCompleto = [p.numero, p.nomes, p.tema, p.departamento].join(' ').toLowerCase();
+    const okBusca = !busca || textoCompleto.includes(busca);
+    const okAno   = !ano   || p.ano === ano;
+    const okDepto = !depto || p.departamento === depto;
+    return okBusca && okAno && okDepto;
+  });
+
+  renderizar(resultado);
+}
+
+function renderizar(lista) {
+  const tbody = document.getElementById('corpo-tabela');
+  const semRes = document.getElementById('sem-resultados');
+  const rodape = document.getElementById('rodape-contagem');
+
+  tbody.innerHTML = '';
+
+  if (lista.length === 0) {
+    semRes.style.display = 'block';
+    rodape.textContent = '';
+    return;
+  }
+
+  semRes.style.display = 'none';
+  rodape.textContent = lista.length + ' portaria(s) encontrada(s)';
+
+  lista.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-numero">
+        <div class="tag-ano">${p.ano}</div><br>
+        ${esc(p.numero)}
+      </td>
+      <td class="col-nomes">${esc(p.nomes)}</td>
+      <td class="col-tema">${esc(p.tema)}</td>
+      <td><span class="col-depto">${esc(p.departamento)}</span></td>
+      <td class="col-data">${esc(p.data)}</td>
+      <td class="col-link">
+        ${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">📄 Abrir</a>` : '—'}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function esc(str) {
+  if (!str) return '—';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function limparFiltros() {
+  document.getElementById('busca').value = '';
+  document.getElementById('filtro-ano').value = '';
+  document.getElementById('filtro-depto').value = '';
+  filtrar();
+}
+
+carregarDados();
+
+  
+</script>
+</body>
+</html>
